@@ -1,0 +1,79 @@
+# Codemagic CI/CD 配置
+# 构建 VAVE AI 移动应用（Flutter WebView 包装器）
+
+workflows:
+  # iOS 构建
+  ios-workflow:
+    name: iOS Build
+    instance_type: mac_mini_m1
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    cache:
+      cache_paths:
+        - $FLUTTER_ROOT/.pub-cache
+        - $HOME/.gradle/caches
+    triggering:
+      events:
+        - push
+        - tag
+      branch_patterns:
+        - pattern: main
+          include: true
+    scripts:
+      - name: 获取 Flutter 依赖
+        script: flutter pub get
+      - name: 运行测试
+        script: flutter test
+      - name: 构建 iOS Release
+        script: flutter build ios --release --no-codesign
+    artifacts:
+      - build/ios/iphoneos/Runner.app
+      - build/ios/ipa/*.ipa
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com  # 替换为你的邮箱
+
+  # Android 构建
+  android-workflow:
+    name: Android Build
+    instance_type: linux_x2
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      android_signing:
+        - vave_keystore  # 需要在 Codemagic 控制台上传 keystore
+    cache:
+      cache_paths:
+        - $FLUTTER_ROOT/.pub-cache
+        - $HOME/.gradle/caches
+    triggering:
+      events:
+        - push
+        - tag
+      branch_patterns:
+        - pattern: main
+          include: true
+    scripts:
+      - name: 获取 Flutter 依赖
+        script: flutter pub get
+      - name: 运行测试
+        script: flutter test
+      - name: 构建 Android APK
+        script: flutter build apk --release
+      - name: 构建 Android App Bundle
+        script: flutter build appbundle --release
+    artifacts:
+      - build/app/outputs/flutter-apk/*.apk
+      - build/app/outputs/bundle/release/*.aab
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com  # 替换为你的邮箱
+      # 可选：自动上传到 Google Play
+      # google_play:
+      #   credentials: $GOOGLE_PLAY_CREDENTIALS
+      #   track: internal
