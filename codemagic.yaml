@@ -1,20 +1,37 @@
 workflows:
-  android-workflow:
-    name: Android Workflow
+  harmonyos-workflow:
+    name: HarmonyOS Build
     instance_type: mac_mini_m1
     max_build_duration: 30
     environment:
       flutter: stable
+      xcode: latest
+      cocoapods: default
+    cache:
+      cache_paths:
+        - $FLUTTER_ROOT/.pub-cache
+        - $HOME/.gradle/caches
     scripts:
-      - name: Clean build cache
-        script: flutter clean && rm -rf android/.gradle && rm -rf build/
+      - name: Clean build
+        script: |
+          flutter clean
+          rm -rf android/.gradle
+          rm -rf build/
       - name: Get Flutter packages
-        script: flutter pub get
-      - name: Build Android
-        script: flutter build apk --release
+        script: |
+          flutter pub get
+      - name: Build HarmonyOS Compatible APK
+        script: |
+          flutter build apk --release \
+            --target-platform android-arm64 \
+            --split-debug-info=build/app/outputs/symbols
     artifacts:
       - build/app/outputs/flutter-apk/*.apk
+      - build/app/outputs/bundle/**/*.aab
     publishing:
       email:
         recipients:
           - 1276694046@qq.com
+        notify:
+          success: true
+          failure: true
