@@ -6,11 +6,8 @@ workflows:
     environment:
       flutter: stable
     scripts:
-        - name: Clean build cache
-        script: |
-          flutter clean
-          rm -rf android/.gradle
-          rm -rf build/
+      - name: Clean build cache
+        script: flutter clean && rm -rf android/.gradle && rm -rf build/
       - name: Get Flutter packages
         script: flutter pub get
       - name: Build Android
